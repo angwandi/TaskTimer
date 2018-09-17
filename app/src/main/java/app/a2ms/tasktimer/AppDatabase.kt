@@ -23,11 +23,19 @@ internal class AppDatabase constructor(context: Context) : SQLiteOpenHelper(cont
                 "")
     }
 
-    override fun onCreate(db: SQLiteDatabase?) {
+    override fun onCreate(db: SQLiteDatabase) {
         //CREATE TABLE Tasks(-id INTEGER PRIMARY KEY NOT NULL, Name TEXT NOT NULL, SortOrder INTEGER);
+        Log.d(TAG, "onCreate starts")
+        val sSQL = """CREATE TABLE ${TasksContract.TABLE_NAME} (
+            ${TasksContract.Colums.ID} INTEGER PRIMARY KEY NOT NULL,
+            ${TasksContract.Colums.TASK_NAME} TEXT NOT NULL,
+            ${TasksContract.Colums.TASK_DESCRIPTION} TEXT,
+            ${TasksContract.Colums.TASK_SORT_ORDER} INTEGER);""".replaceIndent(" ") //to format the space at start of each line
+        Log.d(TAG, sSQL)
+        db.execSQL(sSQL) //remove the safe operator ? because db has benn created
     }
 
-    override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
+    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }
