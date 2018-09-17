@@ -14,7 +14,7 @@ import android.util.Log
 
 private const val TAG = "AppProvider"
 //constants for Uri and Android Authority
-private val CONTENT_AUTHORITY = "app.a2ms.tasktimer.provider"
+const val CONTENT_AUTHORITY = "app.a2ms.tasktimer.provider"
 
 private const val TASKS = 100
 private const val TASKS_ID = 101
@@ -60,7 +60,8 @@ class AppProvider : ContentProvider() {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun query(uri: Uri, projection: Array<out String>?, selection: String?, selectionArgs: Array<out String>?, sortOrder: String?): Cursor {
+    override fun query(uri: Uri, projection: Array<out String>?, selection: String?,
+                       selectionArgs: Array<out String>?, sortOrder: String?): Cursor {
         Log.d(TAG, "query: called with uri $uri")
         val match = uriMatcher.match(uri)
         Log.d(TAG, "query: match is  $match")
@@ -95,7 +96,8 @@ class AppProvider : ContentProvider() {
         }
 
         val db = AppDatabase.getInstance(context).readableDatabase
-        val cursor = queryBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder)
+        val cursor = queryBuilder.query(db, projection, selection, selectionArgs,
+                null, null, sortOrder)
         Log.d(TAG, "query: rows in returned cursor = ${cursor.count}") // TODO remove this line
 
         return cursor
