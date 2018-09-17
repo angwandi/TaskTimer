@@ -1,5 +1,6 @@
 package app.a2ms.tasktimer
 
+import android.content.ContentValues
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
@@ -16,11 +17,14 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
+//        testInsert()
+        testUpdate()
+
         val projection = arrayOf(TasksContract.Columns.TASK_NAME, TasksContract.Columns.TASK_SORT_ORDER)
         val sortColumn = TasksContract.Columns.TASK_SORT_ORDER
-//        val cursor = contentResolver.query(TasksContract.CONTENT_URI,
-        val cursor = contentResolver.query(TasksContract.buildUriFromId(2),
-                projection,
+        val cursor = contentResolver.query(TasksContract.CONTENT_URI,
+//        val cursor = contentResolver.query(TasksContract.buildUriFromId(2),
+                null,
                 null,
                 null,
                 sortColumn)
@@ -29,17 +33,45 @@ class MainActivity : AppCompatActivity() {
             while (it.moveToNext()) {
                 //Cycle through all records
                 with(cursor) {
-                    //val id = getLong(0)
-                    val name = getString(0)
-                    //val description = getString(2)
-                    val sortOrder = getShort(1)
-                    val result = "Name: $name  Sort order: $sortOrder"
+                    val id = getLong(0)
+                    val name = getString(1)
+                    val description = getString(2)
+                    val sortOrder = getString(3)
+                    val result = "ID: $id. Name: $name. Description $description. Sort order: $sortOrder"
                     Log.d(TAG, "onCreate: reading data $result")
                 }
             }
         }
         Log.d(TAG, "******************************************")
 
+    }
+
+    /**
+     * Test Update function [testUpdate]
+     * */
+    private fun testUpdate() {
+        val values = ContentValues().apply {
+            put(TasksContract.Columns.TASK_NAME, "Content Provider")
+            put(TasksContract.Columns.TASK_DESCRIPTION, "Record content provider video")
+        }
+        val taskUri = TasksContract.buildUriFromId(3)
+        val rowsAffected = contentResolver.update(taskUri, values, null, null)
+        Log.d(TAG, "Number of rows affected $rowsAffected")
+
+    }
+
+    /**
+     * Test Insert function [testInsert]
+     * */
+    private fun testInsert() {
+        val values = ContentValues().apply {
+            put(TasksContract.Columns.TASK_NAME, "New Task 1")
+            put(TasksContract.Columns.TASK_DESCRIPTION, "Description 1")
+            put(TasksContract.Columns.TASK_SORT_ORDER, 2)
+        }
+        val uri = contentResolver.insert(TasksContract.CONTENT_URI, values)
+        Log.d(TAG, "New row id(in uri) is $uri")
+        Log.d(TAG, "id (in uri) is ${TasksContract.getId(uri)}")
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
