@@ -4,6 +4,7 @@ import android.content.ContentProvider
 import android.content.ContentValues
 import android.content.UriMatcher
 import android.database.Cursor
+import android.database.SQLException
 import android.database.sqlite.SQLiteQueryBuilder
 import android.net.Uri
 import android.util.Log
@@ -46,8 +47,6 @@ class AppProvider : ContentProvider() {
 
 //        matcher.addURI(CONTENT_AUTHORITY, DurationsContract.TABLE_NAME, TASK_DURATIONS)
 //        matcher.addURI(CONTENT_AUTHORITY, "${DurationsContract.TABLE_NAME}/#", TASK_DURATIONS_ID)
-
-
         return matcher
     }
 
@@ -60,11 +59,8 @@ class AppProvider : ContentProvider() {
         val match = uriMatcher.match(uri)
         return when (match) {
             TASKS -> TasksContract.CONTENT_TYPE
-
             TASKS_ID -> TasksContract.CONTENT_ITEM_TYPE
-
             TIMINGS -> TimingsContract.CONTENT_TYPE
-
             TIMINGS_ID -> TimingsContract.CONTENT_ITEM_TYPE
 //
 //            TASK_DURATIONS -> DurationsContract.CONTENT_TYPE
@@ -84,21 +80,18 @@ class AppProvider : ContentProvider() {
         val queryBuilder: SQLiteQueryBuilder = SQLiteQueryBuilder()
         when (match) {
             TASKS -> queryBuilder.tables = TasksContract.TABLE_NAME
-
             TASKS_ID -> {
                 queryBuilder.tables = TasksContract.TABLE_NAME
                 val taskId = TasksContract.getId(uri)
                 queryBuilder.appendWhere("${TasksContract.Columns.ID} = ")
                 queryBuilder.appendWhereEscapeString("$taskId")
             }
-
             TIMINGS -> queryBuilder.tables = TimingsContract.TABLE_NAME
             TIMINGS_ID -> {
                 queryBuilder.tables = TimingsContract.TABLE_NAME
                 val timingId = TimingsContract.getId(uri)
                 queryBuilder.appendWhereEscapeString("${TimingsContract.Columns.ID} = ")
                 queryBuilder.appendWhere("$timingId")
-
             }
 //            TASK_DURATIONS -> queryBuilder.tables = DurationsContract.TABLE_NAME
 //
@@ -112,19 +105,44 @@ class AppProvider : ContentProvider() {
 
             else -> throw IllegalArgumentException("Unknown URI: $uri")
         }
-
         val db = AppDatabase.getInstance(context).readableDatabase
         val cursor = queryBuilder.query(db, projection, selection, selectionArgs,
                 null, null, sortOrder)
         Log.d(TAG, "query: rows in returned cursor = ${cursor.count}") // TODO remove this line
-
         return cursor
-
-
     }
 
     override fun insert(uri: Uri, values: ContentValues): Uri {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        Log.d(TAG, "insert: called with uri $uri")
+        val match = uriMatcher.match(uri)
+        Log.d(TAG, "insert: match is  $match")
+
+        val recordId: Long
+        val returnUri: Uri
+
+        when (match) {
+            TASKS -> {
+                val db = AppDatabase.getInstance(context).writableDatabase
+                recordId = db.insert(TasksContract.TABLE_NAME, null, values)
+                if (recordId != -1L) { //check nullColumnHack above
+                    returnUri = TasksContract.buildUriFromId(recordId)
+                } else {
+                    throw SQLException("Failed to insert, Uri was $uri")
+                }
+            }
+            TIMINGS -> {
+                val db = AppDatabase.getInstance(context).writableDatabase
+                recordId = db.insert(TimingsContract.TABLE_NAME, null, values)
+                if (recordId != -1L) { //check nullColumnHack above
+                    returnUri = TimingsContract.buildUriFromId(recordId)
+                } else {
+                    throw SQLException("Failed to insert, Uri was $uri")
+                }
+            }
+            else -> throw IllegalArgumentException("Unknown uri:$uri")
+        }
+        Log.d(TAG, "Exiting insert, returning $returnUri ")
+        return returnUri
     }
 
     override fun update(uri: Uri, values: ContentValues, selection: String?, selectionArgs: Array<out String>?): Int {
