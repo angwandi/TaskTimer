@@ -57,7 +57,22 @@ class AppProvider : ContentProvider() {
     }
 
     override fun getType(uri: Uri): String {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val match = uriMatcher.match(uri)
+        return when (match) {
+            TASKS -> TasksContract.CONTENT_TYPE
+
+            TASKS_ID -> TasksContract.CONTENT_ITEM_TYPE
+//
+//            TIMINGS -> TimingsContract.CONTENT_TYPE
+//
+//            TIMINGS_ID -> TimingsContract.CONTENT_ITEM_TYPE
+//
+//            TASK_DURATIONS -> DurationsContract.CONTENT_TYPE
+//
+//            TASK_DURATIONS_ID -> DurationsContract.CONTENT_ITEM_TYPE
+
+            else -> throw IllegalArgumentException("unknown Uri: $uri")
+        }
     }
 
     override fun query(uri: Uri, projection: Array<out String>?, selection: String?,
