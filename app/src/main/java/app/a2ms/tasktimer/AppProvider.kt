@@ -4,6 +4,7 @@ import android.content.ContentProvider
 import android.content.ContentValues
 import android.content.UriMatcher
 import android.database.Cursor
+import android.database.sqlite.SQLiteQueryBuilder
 import android.net.Uri
 import android.util.Log
 
@@ -16,7 +17,7 @@ private const val TAG = "AppProvider"
 private val CONTENT_AUTHORITY = "app.a2ms.tasktimer.provider"
 
 private const val TASKS = 100
-private const val TASK_ID = 101
+private const val TASKS_ID = 101
 
 private const val TIMINGS = 200
 private const val TIMINGS_ID = 201
@@ -34,30 +35,83 @@ class AppProvider : ContentProvider() {
     private fun buildUriMatch(): UriMatcher {
         Log.d(TAG, "buildUriMatch: starts")
         val matcher = UriMatcher(UriMatcher.NO_MATCH)
+
+        //e.g content//app.a2ms.tasktimer.provider/Tasks
+        matcher.addURI(CONTENT_AUTHORITY, TasksContract.TABLE_NAME, TASKS)
+        //e.g content//app.a2ms.tasktimer.provider/Tasks/8
+        matcher.addURI(CONTENT_AUTHORITY, "${TasksContract.TABLE_NAME}/#", TASKS_ID)
+
+//        matcher.addURI(CONTENT_AUTHORITY, TimingsContract.TABLE_NAME, TIMINGS)
+//        matcher.addURI(CONTENT_AUTHORITY, "${TimingsContract.TABLE_NAME}/#", TIMINGS_ID)
+//
+//        matcher.addURI(CONTENT_AUTHORITY, DurationsContract.TABLE_NAME, TASK_DURATIONS)
+//        matcher.addURI(CONTENT_AUTHORITY, "${DurationsContract.TABLE_NAME}/#", TASK_DURATIONS_ID)
+
+
         return matcher
     }
 
-    override fun insert(uri: Uri?, values: ContentValues?): Uri {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun query(uri: Uri?, projection: Array<out String>?, selection: String?, selectionArgs: Array<out String>?, sortOrder: String?): Cursor {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
     override fun onCreate(): Boolean {
+        Log.d(TAG, "onCreate: starts")
+        return true
+    }
+
+    override fun getType(uri: Uri): String {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun update(uri: Uri?, values: ContentValues?, selection: String?, selectionArgs: Array<out String>?): Int {
+    override fun query(uri: Uri, projection: Array<out String>?, selection: String?, selectionArgs: Array<out String>?, sortOrder: String?): Cursor {
+        Log.d(TAG, "query: called with uri $uri")
+        val match = uriMatcher.match(uri)
+        Log.d(TAG, "query: match is  $match")
+
+        val queryBuilder: SQLiteQueryBuilder = SQLiteQueryBuilder()
+        when (match) {
+            TASKS -> queryBuilder.tables = TasksContract.TABLE_NAME
+
+            TASKS_ID -> {
+                queryBuilder.tables = TasksContract.TABLE_NAME
+                val taskId = TasksContract.getId(uri)
+                queryBuilder.appendWhereEscapeString("${TasksContract.Columns.ID} = $taskId")       // <-- change method
+            }
+
+//            TIMINGS -> queryBuilder.tables = TimingsContract.TABLE_NAME
+//
+//            TIMINGS_ID -> {
+//                queryBuilder.tables = TimingsContract.TABLE_NAME
+//                val timingId = TimingsContract.getId(uri)
+//                queryBuilder.appendWhereEscapeString("${TimingsContract.Columns.ID} = $timingId")   // <-- and here
+//            }
+//
+//            TASK_DURATIONS -> queryBuilder.tables = DurationsContract.TABLE_NAME
+//
+//            TASK_DURATIONS_ID -> {
+//                queryBuilder.tables = DurationsContract.TABLE_NAME
+//                val durationId = DurationsContract.getId(uri)
+//                queryBuilder.appendWhereEscapeString("${DurationsContract.Columns.ID} = $durationId")   // <-- and here
+//            }
+
+            else -> throw IllegalArgumentException("Unknown URI: $uri")
+        }
+
+        val db = AppDatabase.getInstance(context).readableDatabase
+        val cursor = queryBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder)
+        Log.d(TAG, "query: rows in returned cursor = ${cursor.count}") // TODO remove this line
+
+        return cursor
+
+
+    }
+
+    override fun insert(uri: Uri, values: ContentValues): Uri {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun delete(uri: Uri?, selection: String?, selectionArgs: Array<out String>?): Int {
+    override fun update(uri: Uri, values: ContentValues, selection: String?, selectionArgs: Array<out String>?): Int {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun getType(uri: Uri?): String {
+    override fun delete(uri: Uri, selection: String?, selectionArgs: Array<out String>?): Int {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }
