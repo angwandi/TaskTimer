@@ -41,9 +41,9 @@ class AppProvider : ContentProvider() {
         //e.g content//app.a2ms.tasktimer.provider/Tasks/8
         matcher.addURI(CONTENT_AUTHORITY, "${TasksContract.TABLE_NAME}/#", TASKS_ID)
 
-//        matcher.addURI(CONTENT_AUTHORITY, TimingsContract.TABLE_NAME, TIMINGS)
-//        matcher.addURI(CONTENT_AUTHORITY, "${TimingsContract.TABLE_NAME}/#", TIMINGS_ID)
-//
+        matcher.addURI(CONTENT_AUTHORITY, TimingsContract.TABLE_NAME, TIMINGS)
+        matcher.addURI(CONTENT_AUTHORITY, "${TimingsContract.TABLE_NAME}/#", TIMINGS_ID)
+
 //        matcher.addURI(CONTENT_AUTHORITY, DurationsContract.TABLE_NAME, TASK_DURATIONS)
 //        matcher.addURI(CONTENT_AUTHORITY, "${DurationsContract.TABLE_NAME}/#", TASK_DURATIONS_ID)
 
@@ -62,10 +62,10 @@ class AppProvider : ContentProvider() {
             TASKS -> TasksContract.CONTENT_TYPE
 
             TASKS_ID -> TasksContract.CONTENT_ITEM_TYPE
-//
-//            TIMINGS -> TimingsContract.CONTENT_TYPE
-//
-//            TIMINGS_ID -> TimingsContract.CONTENT_ITEM_TYPE
+
+            TIMINGS -> TimingsContract.CONTENT_TYPE
+
+            TIMINGS_ID -> TimingsContract.CONTENT_ITEM_TYPE
 //
 //            TASK_DURATIONS -> DurationsContract.CONTENT_TYPE
 //
@@ -92,14 +92,14 @@ class AppProvider : ContentProvider() {
                 queryBuilder.appendWhereEscapeString("$taskId")
             }
 
-//            TIMINGS -> queryBuilder.tables = TimingsContract.TABLE_NAME
-//            TIMINGS_ID -> {
-//                queryBuilder.tables = TimingsContract.TABLE_NAME
-//                val timingId = TimingsContract.getId(uri)
-//                queryBuilder.appendWhereEscapeString("${TimingsContract.Columns.ID} = ")
-            //queryBuilder.appendWhere("$timingId")
+            TIMINGS -> queryBuilder.tables = TimingsContract.TABLE_NAME
+            TIMINGS_ID -> {
+                queryBuilder.tables = TimingsContract.TABLE_NAME
+                val timingId = TimingsContract.getId(uri)
+                queryBuilder.appendWhereEscapeString("${TimingsContract.Columns.ID} = ")
+                queryBuilder.appendWhere("$timingId")
 
-//            }
+            }
 //            TASK_DURATIONS -> queryBuilder.tables = DurationsContract.TABLE_NAME
 //
 //            TASK_DURATIONS_ID -> {
