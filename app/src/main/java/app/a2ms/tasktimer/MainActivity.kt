@@ -3,10 +3,12 @@ package app.a2ms.tasktimer
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-
 import kotlinx.android.synthetic.main.activity_main.*
+
+private const val TAG = "MainActivity"
 
 class MainActivity : AppCompatActivity() {
 
@@ -14,6 +16,26 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+
+        val appDatabase = AppDatabase.getInstance(this)
+        val db = appDatabase.readableDatabase
+
+        val cursor = db.rawQuery("SELECT * FROM Tasks", null)
+        Log.d(TAG, "******************************************")
+        cursor.use {
+            while (it.moveToNext()) {
+                //Cycle through all records
+                with(cursor) {
+                    val id = getLong(0)
+                    val name = getString(1)
+                    val description = getString(2)
+                    val sortOrder = getShort(3)
+                    val result = "ID: $id. Name: $name Description: $description Sort order: $sortOrder"
+                    Log.d(TAG, "onCreate: reading data $result")
+                }
+            }
+        }
+        Log.d(TAG, "******************************************")
 
         fab.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
