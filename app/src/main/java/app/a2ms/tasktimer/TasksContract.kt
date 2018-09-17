@@ -9,9 +9,9 @@ object TasksContract {
     internal const val TABLE_NAME = "Tasks" // we can use const inside an object but can't in class
 
     /**
-     * Tasks fields : [TasksContract] constructor: to be used to refer to our table columns name
+     * Tasks fields : [TasksContract] constructor(object don't have constructor): to be used to refer to our table columns name
      */
-    object Colums {
+    object Columns {
         const val ID = BaseColumns._ID  //The unique ID for a row.
         const val TASK_NAME = "Name"
         const val TASK_DESCRIPTION = "Description"
