@@ -7,8 +7,9 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import kotlinx.android.synthetic.main.fragment_add_edit.*
 
-private const val TAD = "AddEditFragment"
+private const val TAG = "AddEditFragment"
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 private const val ARG_TASK = "task"
 
@@ -27,21 +28,29 @@ class AddEditFragment : Fragment() {
     private var listener: OnSavedClicked? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        Log.d(TAD, "onCreate starts")
+        Log.d(TAG, "onCreate starts")
         super.onCreate(savedInstanceState)
         task = arguments?.getParcelable(ARG_TASK)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        Log.d(TAD, "onCreateView starts")
+        Log.d(TAG, "onCreateView starts")
 
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_add_edit, container, false)
     }
 
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        Log.d(TAG, "onActivityCreated starts")
+        super.onActivityCreated(savedInstanceState)
+        addedit_save.setOnClickListener {
+            listener?.onSavedClicked()
+        }
+    }
+
     override fun onAttach(context: Context) {
-        Log.d(TAD, "onAttach starts")
+        Log.d(TAG, "onAttach starts")
         super.onAttach(context)
         if (context is OnSavedClicked) {
             listener = context
@@ -51,7 +60,7 @@ class AddEditFragment : Fragment() {
     }
 
     override fun onDetach() {
-        Log.d(TAD, "onDetach starts")
+        Log.d(TAG, "onDetach starts")
         super.onDetach()
         listener = null
     }

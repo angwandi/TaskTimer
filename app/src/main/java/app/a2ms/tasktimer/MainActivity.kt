@@ -1,15 +1,21 @@
 package app.a2ms.tasktimer
 
 import android.os.Bundle
+import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.content_main.*
 
 private const val TAG = "MainActivity"
 
 class MainActivity : AppCompatActivity(), AddEditFragment.OnSavedClicked {
+    //whether or not the activity is in two pane mode
+    //i.e running in landscape, or on a tablet
+    private var mTwoPane = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -17,8 +23,23 @@ class MainActivity : AppCompatActivity(), AddEditFragment.OnSavedClicked {
         setSupportActionBar(toolbar)
     }
 
+    private fun removeEditPane(fragment: Fragment? = null) {
+        Log.d(TAG, "removeEditPane called")
+        if (fragment != null) {
+            supportFragmentManager.beginTransaction()
+                    .remove(fragment)
+                    .commit()
+        }
+        //set the visibility of the right hand pane
+        task_details_container.visibility = if (mTwoPane) View.INVISIBLE else View.GONE
+        //and show the left hand pane
+        mainFragment.view?.visibility = View.VISIBLE
+    }
+
     override fun onSavedClicked() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        Log.d(TAG, "onSaveClicked called")
+        var fragment = supportFragmentManager.findFragmentById(R.id.task_details_container)
+        removeEditPane(fragment)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -43,7 +64,7 @@ class MainActivity : AppCompatActivity(), AddEditFragment.OnSavedClicked {
         //Create a new fragment to edit the task
         val newFragment = AddEditFragment.newInstance(task)
         supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment, newFragment)
+                .replace(R.id.task_details_container, newFragment)
                 .commit()
         Log.d(TAG, "Exiting taskEditRequest")
     }
