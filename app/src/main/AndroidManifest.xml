@@ -19,8 +19,11 @@
             </intent-filter>
         </activity>
         <provider
-            android:name="app.a2ms.tasktimer.AppProvider"
+            android:name=".AppProvider"
             android:authorities="app.a2ms.tasktimer.provider"
             android:exported="false" />
+
+        <activity android:name=".Loggin.AccountActivity" />
+        <activity android:name=".Loggin.LoginActivity"></activity>
     </application>
 </manifest>
