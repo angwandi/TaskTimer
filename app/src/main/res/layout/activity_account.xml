@@ -49,7 +49,8 @@
         android:textSize="16sp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/id_label" />
+        app:layout_constraintTop_toBottomOf="@+id/id_label"
+        tools:text="123456456987" />
 
     <TextView
         android:id="@+id/info_label"
@@ -60,7 +61,8 @@
         android:textSize="14sp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/id" />
+        app:layout_constraintTop_toBottomOf="@+id/id"
+        tools:text="Info from facebook" />
 
     <TextView
         android:id="@+id/info"
@@ -71,7 +73,8 @@
         android:textSize="16sp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/info_label" />
+        app:layout_constraintTop_toBottomOf="@+id/info_label"
+        tools:text="info " />
 
     <Button
         android:id="@+id/logout_button"

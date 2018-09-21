@@ -1,6 +1,6 @@
 <resources>
     <!--<string name="app_name">Task Timer</string>-->
-    <string name="app_name">Surf Connect</string>
+    <string name="app_name">Task Timer</string>
     <string name="action_settings">Settings</string>
     <string name="menutitle_addTask">Add Task</string>
     <string name="menutitle_showDuration">Duration Report</string>
@@ -18,12 +18,14 @@
     //Login
     <string name="FACEBOOK_APP_ID">274046733234119</string>
     <string name="ACCOUNT_KIT_CLIENT_TOKEN">4d3ff5a9c3871b4ab031992f7404dd4c</string>
-    <string name="ak_login_protocol_scheme">aka274046733234119</string>
+    <string name="ak_login_protocol_scheme">ak274046733234119</string>
+    <string name="fb_login_protocol_scheme">fb274046733234119</string>
     <string name="login_email_label">Login with Email</string>
     <string name="login_phone_label">Login with Phone Number</string>
     <string name="account">Account</string>
     <string name="id_label">Account ID</string>
     <string name="phone_label">Phone Number</string>
     <string name="email_label">Email</string>
+    <string name="name_label">Name</string>
     <string name="logout_label">Log Out</string>
 </resources>
