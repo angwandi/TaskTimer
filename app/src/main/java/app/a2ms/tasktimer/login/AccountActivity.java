@@ -10,6 +10,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.facebook.AccessToken;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.HttpMethod;
 import com.facebook.Profile;
 import com.facebook.ProfileTracker;
 import com.facebook.accountkit.Account;
@@ -18,6 +24,7 @@ import com.facebook.accountkit.AccountKitCallback;
 import com.facebook.accountkit.AccountKitError;
 import com.facebook.accountkit.PhoneNumber;
 import com.facebook.login.LoginManager;
+import com.facebook.login.LoginResult;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
@@ -25,26 +32,39 @@ import com.makeramen.roundedimageview.RoundedTransformationBuilder;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Transformation;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.Arrays;
 import java.util.Locale;
+import java.util.Set;
 
 import app.a2ms.tasktimer.R;
 
 public class AccountActivity extends AppCompatActivity {
+
     ProfileTracker profileTracker;
     ImageView profilePic;
     TextView id;
     TextView infoLabel;
     TextView info;
+    TextView locationLabel;
+    TextView location;
+    CallbackManager callbackManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_account);
         FontHelper.setCustomTypeface(findViewById(R.id.view_root));
+
         profilePic = findViewById(R.id.profile_image);
         id = findViewById(R.id.id);
         infoLabel = findViewById(R.id.info_label);
         info = findViewById(R.id.info);
+        locationLabel = findViewById(R.id.location_label);
+        location = findViewById(R.id.location);
+
         // register a receiver for the onCurrentProfileChanged event
         profileTracker = new ProfileTracker() {
             @Override
@@ -54,6 +74,7 @@ public class AccountActivity extends AppCompatActivity {
                 }
             }
         };
+
         if (AccessToken.getCurrentAccessToken() != null) {
             // If there is an access token then Login Button was used
             // Check if the profile has already been fetched
@@ -72,6 +93,7 @@ public class AccountActivity extends AppCompatActivity {
                     // get Account Kit ID
                     String accountKitId = account.getId();
                     id.setText(accountKitId);
+
                     PhoneNumber phoneNumber = account.getPhoneNumber();
                     if (account.getPhoneNumber() != null) {
                         // if the phone number is available, display it
@@ -98,6 +120,7 @@ public class AccountActivity extends AppCompatActivity {
     @Override
     public void onDestroy() {
         super.onDestroy();
+
         // unregister the profile tracker receiver
         profileTracker.stopTracking();
     }
@@ -107,10 +130,36 @@ public class AccountActivity extends AppCompatActivity {
         AccountKit.logOut();
         // logout of Login Button
         LoginManager.getInstance().logOut();
-        launchLoginActivity();
+        // let MainActivity know the user logged out
+        setResult(RESULT_OK);
+        finish();
     }
 
     private void displayProfileInfo(Profile profile) {
+        callbackManager = CallbackManager.Factory.create();
+        Set permissions = AccessToken.getCurrentAccessToken().getPermissions();
+        if (permissions.contains("user_location")) {
+            fetchLocation();
+        } else {
+            LoginManager loginManager = LoginManager.getInstance();
+            loginManager.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+                @Override
+                public void onSuccess(LoginResult loginResult) {
+                    fetchLocation();
+                }
+
+                @Override
+                public void onCancel() {
+                    String permissionMsg = getResources().getString(R.string.location_permission_message);
+                    Toast.makeText(AccountActivity.this, permissionMsg, Toast.LENGTH_LONG).show();
+                }
+
+                @Override
+                public void onError(FacebookException error) {
+                }
+            });
+            loginManager.logInWithReadPermissions(this, Arrays.asList("user_location"));
+        }
         // get Profile ID
         String profileId = profile.getId();
         id.setText(profileId);
@@ -121,12 +170,6 @@ public class AccountActivity extends AppCompatActivity {
         // display the profile picture
         Uri profilePicUri = profile.getProfilePictureUri(100, 100);
         displayProfilePic(profilePicUri);
-    }
-
-    private void launchLoginActivity() {
-        Intent intent = new Intent(this, LoginActivity.class);
-        startActivity(intent);
-        finish();
     }
 
     private String formatPhoneNumber(String phoneNumber) {
@@ -149,7 +192,44 @@ public class AccountActivity extends AppCompatActivity {
                 .build();
         Picasso.with(AccountActivity.this)
                 .load(uri)
+                .placeholder(R.drawable.icon_profile_empty)
                 .transform(transformation)
                 .into(profilePic);
+    }
+
+    private void fetchLocation() {
+        Bundle parameters = new Bundle();
+        parameters.putString("fields", "location");
+        new GraphRequest(
+                AccessToken.getCurrentAccessToken(),
+                "/me",
+                parameters,
+                HttpMethod.GET,
+                new GraphRequest.Callback() {
+                    @Override
+                    public void onCompleted(GraphResponse response) {
+                        if (response.getError() != null) {
+                            // display error message
+                            Toast.makeText(AccountActivity.this, response.getError().getErrorMessage(), Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        JSONObject jsonResponse = response.getJSONObject();
+                        try {
+                            JSONObject locationObj = jsonResponse.getJSONObject("location");
+                            String locationStr = locationObj.getString("name");
+                            location.setText(locationStr);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+        ).executeAsync();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        // Forward result to the callback manager for Login Button
+        callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 }
